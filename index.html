@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>To-Do List with Local Storage</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f6f6f6; margin: 0; }
+    .container { max-width: 400px; margin: 40px auto; background: #fff; box-shadow: 0 2px 8px #0002; padding: 30px; border-radius: 8px; }
+    h2 { text-align: center; margin-bottom: 20px; }
+    form { display: flex; margin-bottom: 20px; }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px 0 0 4px;
+      outline: none;
+    }
+    button {
+      padding: 10px 18px;
+      border: none;
+      background: #007bff;
+      color: #fff;
+      border-radius: 0 4px 4px 0;
+      cursor: pointer;
+    }
+    ul { list-style: none; padding: 0; margin: 0; }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    li:last-child { border-bottom: none; }
+    .remove-btn {
+      background: #e63946;
+      color: #fff;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .done {
+      text-decoration: line-through;
+      color: #aaa;
+    }
+    .check-btn {
+      margin-right: 10px;
+      cursor: pointer;
+      color: #4caf50;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>To-Do List</h2>
+    <form id="todo-form">
+      <input type="text" id="todo-input" placeholder="Add a new task..." autocomplete="off" required>
+      <button type="submit">Add</button>
+    </form>
+    <ul id="todo-list"></ul>
+  </div>
+  <script>
+    // =========== Local Storage Functions ===========
+    function getTodos() {
+      return JSON.parse(localStorage.getItem('todos') || '[]');
+    }
+    function saveTodos(todos) {
+      localStorage.setItem('todos', JSON.stringify(todos));
+    }
+    // ==============================================
+
+    // Render to-do items from localStorage
+    function renderTodos() {
+      const todos = getTodos();
+      const list = document.getElementById('todo-list');
+      list.innerHTML = '';
+      todos.forEach((todo, idx) => {
+        const li = document.createElement('li');
+        const checkBtn = document.createElement('span');
+        checkBtn.innerHTML = todo.done ? '✔️' : '⬜';
+        checkBtn.className = 'check-btn';
+        if (todo.done) li.classList.add('done');
+        checkBtn.onclick = () => toggleDone(idx);
+        li.appendChild(checkBtn);
+
+        const txt = document.createElement('span');
+        txt.innerText = todo.text;
+        li.appendChild(txt);
+
+        const rmBtn = document.createElement('button');
+        rmBtn.innerText = 'Delete';
+        rmBtn.className = 'remove-btn';
+        rmBtn.onclick = () => removeTodo(idx);
+        li.appendChild(rmBtn);
+
+        list.appendChild(li);
+      });
+    }
+
+    // Add new todo
+    document.getElementById('todo-form').onsubmit = function(e) {
+      e.preventDefault();
+      const input = document.getElementById('todo-input');
+      const text = input.value.trim();
+      if (!text) return;
+      const todos = getTodos();
+      todos.push({ text, done: false });
+      saveTodos(todos);
+      input.value = '';
+      renderTodos();
+    };
+
+    // Toggle done/undone
+    function toggleDone(idx) {
+      const todos = getTodos();
+      todos[idx].done = !todos[idx].done;
+      saveTodos(todos);
+      renderTodos();
+    }
+
+    // Remove todo
+    function removeTodo(idx) {
+      const todos = getTodos();
+      todos.splice(idx, 1);
+      saveTodos(todos);
+      renderTodos();
+    }
+
+    // Initialize
+    renderTodos();
+  </script>
+</body>
+</html>
